@@ -1,0 +1,158 @@
+/* Wireframe stylesheet
+   Greyscale "boxes and labels" look, typical of a low-fidelity wireframe.
+   Contrast notes:
+   - Body text #1A1A1A on #FFFFFF  -> ~18.5:1 (well above WCAG AA/AAA for normal text)
+   - Link text  #0B5FA5 on #FFFFFF -> ~6.3:1  (passes AA for normal text)
+   - Nav text   #1A1A1A on #EAEAEA -> ~16.9:1
+   - Disclaimer text #1A1A1A on #FFF6DA -> ~17:1
+*/
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1A1A1A;
+  background: #FFFFFF;
+  line-height: 1.5;
+}
+
+.wire-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: #6B6B6B;
+  margin: 0 0 6px 0;
+}
+
+/* Top navigation */
+header.site-nav {
+  background: #EAEAEA;
+  border-bottom: 2px solid #333333;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+header.site-nav .brand {
+  font-weight: bold;
+  font-size: 1.05rem;
+  border: 1px dashed #999999;
+  padding: 6px 10px;
+}
+
+header.site-nav nav a {
+  margin-left: 18px;
+  color: #0B5FA5;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+header.site-nav nav a:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid #0B5FA5;
+  outline-offset: 2px;
+}
+
+header.site-nav nav a[aria-current="page"] {
+  color: #1A1A1A;
+  background: #FFFFFF;
+  border: 1px solid #333333;
+  padding: 4px 8px;
+  text-decoration: none;
+}
+
+main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.box {
+  border: 1px dashed #999999;
+  padding: 18px;
+  margin-bottom: 22px;
+  background: #FCFCFC;
+}
+
+.box h1, .box h2, .box h3 {
+  margin-top: 0;
+}
+
+.hero-box {
+  border: 2px solid #333333;
+  padding: 22px;
+  margin-bottom: 22px;
+  background: #F5F5F5;
+}
+
+.hero-box h1 {
+  margin: 0 0 4px 0;
+  font-size: 1.6rem;
+}
+
+.hero-box .affiliation {
+  margin: 0;
+  color: #444444;
+}
+
+.disclaimer-box {
+  border: 1px solid #B08900;
+  background: #FFF6DA;
+  padding: 14px 18px;
+  margin-top: 14px;
+}
+
+.disclaimer-box p {
+  margin: 0;
+}
+
+.link-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.link-list li {
+  border: 1px dashed #999999;
+  padding: 12px 14px;
+}
+
+.link-list a {
+  color: #0B5FA5;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.placeholder-item {
+  border: 1px dashed #999999;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: #FCFCFC;
+}
+
+.placeholder-item .wire-label {
+  margin-bottom: 4px;
+}
+
+footer.site-footer {
+  border-top: 2px solid #333333;
+  background: #EAEAEA;
+  padding: 14px 24px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #333333;
+}
+
+.external-link::after {
+  content: " (opens external site)";
+  font-size: 0.75rem;
+  color: #6B6B6B;
+}
