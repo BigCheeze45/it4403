@@ -1,0 +1,12 @@
+name: it4403-site
+services:
+  jekyll:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./docs:/srv/jekyll
+    ports:
+      # - 35729:35729 # This port only serves livereload.js over HTTP.
+      - 4000:4000
+    command: [ "jekyll", "serve", "--host", "0.0.0.0", "--livereload" ]
