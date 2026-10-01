@@ -80,7 +80,9 @@ main {
   background: #FCFCFC;
 }
 
-.box h1, .box h2, .box h3 {
+.box h1,
+.box h2,
+.box h3 {
   margin-top: 0;
 }
 
