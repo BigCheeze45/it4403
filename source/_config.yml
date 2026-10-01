@@ -19,7 +19,7 @@ description: >- # this means to ignore newlines until "baseurl:"
   This website was created by me for coursework in IT 4403 and is not
   an official publication of Kennesaw State University.
   Content reflects course exercises and projects only.
-baseurl: "/it4403" # the subpath of your site, e.g. /blog
+baseurl: "/source/" # the subpath of your site, e.g. /blog
 url: "https://bigcheeze45.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 # twitter_username: jekyllrb
 github_username:  BigCheeze45
