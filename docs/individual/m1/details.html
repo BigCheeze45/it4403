@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Details</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1A1A1A;
+            background: #FFFFFF;
+            line-height: 1.5;
+        }
+
+        .wire-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.04em;
+            color: #6B6B6B;
+            margin: 0 0 6px 0;
+        }
+
+        .page-label {
+            text-align: center;
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
+            color: #6B6B6B;
+            padding: 16px;
+        }
+
+        /* Top navigation */
+        header.site-nav {
+            background: #EAEAEA;
+            border-bottom: 2px solid #333333;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        header.site-nav .brand {
+            font-weight: bold;
+            font-size: 1.05rem;
+            border: 1px dashed #999999;
+            padding: 6px 10px;
+        }
+
+        header.site-nav nav a {
+            margin-left: 18px;
+            color: #0B5FA5;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        header.site-nav nav a:focus-visible,
+        a:focus-visible,
+        button:focus-visible {
+            outline: 3px solid #0B5FA5;
+            outline-offset: 2px;
+        }
+
+        header.site-nav nav a[aria-current="page"] {
+            color: #1A1A1A;
+            background: #FFFFFF;
+            border: 1px solid #333333;
+            padding: 4px 8px;
+            text-decoration: none;
+        }
+
+        main {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 0 24px 32px;
+        }
+
+        .box {
+            border: 1px dashed #999999;
+            padding: 18px;
+            margin-bottom: 22px;
+            background: #FCFCFC;
+        }
+
+        .box h1,
+        .box h2,
+        .box h3 {
+            margin-top: 0;
+        }
+
+        .hero-box {
+            border: 2px solid #333333;
+            background: #F5F5F5;
+            padding: 22px;
+            margin-bottom: 22px;
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 20px;
+        }
+
+        .hero-box h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.6rem;
+        }
+
+        .hero-box .affiliation {
+            margin: 0;
+            color: #444444;
+        }
+
+        .hero-box .author-line {
+            margin: 0 0 14px 0;
+            color: #444444;
+        }
+
+        .hero-box .author-line a {
+            color: #0B5FA5;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        .cover-frame img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        table.meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        table.meta-table th,
+        table.meta-table td {
+            text-align: left;
+            padding: 6px 8px;
+            border-bottom: 1px solid #E0E0E0;
+            vertical-align: top;
+        }
+
+        table.meta-table th {
+            width: 190px;
+            color: #6B6B6B;
+            font-weight: bold;
+        }
+
+        table.meta-table a {
+            color: #0B5FA5;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        .quote-box {
+            border-left: 4px solid #333333;
+            background: #FCFCFC;
+            padding: 14px 18px;
+            margin-bottom: 22px;
+            font-style: italic;
+        }
+
+        .record-link-box {
+            border: 2px solid #333333;
+            background: #EAEAEA;
+            padding: 16px 18px;
+            text-align: center;
+        }
+
+        .record-link-box a {
+            color: #0B5FA5;
+            font-weight: bold;
+            text-decoration: underline;
+            font-size: 1rem;
+        }
+
+        .disclaimer-box {
+            border: 1px solid #B08900;
+            background: #FFF6DA;
+            padding: 14px 18px;
+            margin-top: 14px;
+        }
+
+        .disclaimer-box p {
+            margin: 0;
+        }
+
+        .link-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 12px;
+        }
+
+        .link-list li {
+            border: 1px dashed #999999;
+            padding: 12px 14px;
+        }
+
+        .link-list a {
+            color: #0B5FA5;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .placeholder-item {
+            border: 1px dashed #999999;
+            padding: 14px;
+            margin-bottom: 14px;
+            background: #FCFCFC;
+        }
+
+        .placeholder-item .wire-label {
+            margin-bottom: 4px;
+        }
+
+        footer.site-footer {
+            border-top: 2px solid #333333;
+            background: #EAEAEA;
+            padding: 14px 24px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #333333;
+        }
+
+        .external-link::after {
+            content: " (opens external site)";
+            font-size: 0.75rem;
+            color: #6B6B6B;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="site-nav">
+        <nav aria-label="Main navigation">
+            <a href="../../index.html">Home</a>
+            <a href="../../exercises.html">Exercises &amp; Labs</a>
+            <a href="../../projects.html" aria-current="page">Projects</a>
+        </nav>
+    </header>
+    <p class="page-label"></p>
+
+    <main>
+
+        <section class="hero-box">
+            <div class="cover-frame">
+                <img id="cover" src="" alt="">
+            </div>
+            <div>
+                <h1 id="title"></h1>
+                <p class="author-line">
+                    <span id="author-label"></span> <span id="author"></span>
+                </p>
+
+                <div class="quote-box hero-quote" id="quote-box">
+                    <p id="first-sentence"></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="box">
+            <h2>Edition Information</h2>
+            <table class="meta-table">
+                <tr>
+                    <th>Publisher</th>
+                    <td id="publisher"></td>
+                </tr>
+                <tr>
+                    <th>Publication date</th>
+                    <td id="publish-date"></td>
+                </tr>
+                <tr>
+                    <th>Page count</th>
+                    <td id="pages"></td>
+                </tr>
+                <tr>
+                    <th>ISBN-10</th>
+                    <td id="isbn10"></td>
+                </tr>
+                <tr>
+                    <th>ISBN-13</th>
+                    <td id="isbn13"></td>
+                </tr>
+                <tr>
+                    <th>Language</th>
+                    <td id="language"></td>
+                </tr>
+                <tr id="contributor-tr">
+                    <th>Contributor</th>
+                    <td id="contributor"></td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="box">
+            <h2>Additional Identifiers</h2>
+            <table class="meta-table">
+                <tr>
+                    <th>Open Library work</th>
+                    <td id="work"></td>
+                </tr>
+                <tr>
+                    <th>Internet Archive copy</th>
+                    <td id="archive"></td>
+                </tr>
+                <tr>
+                    <th>Goodreads ID</th>
+                    <td id="goodreads"></td>
+                </tr>
+                <tr>
+                    <th>LibraryThing ID</th>
+                    <td id="librarything"></td>
+                </tr>
+                <tr>
+                    <th>Amazon ID</th>
+                    <td id="amazon"></td>
+                </tr>
+                <tr>
+                    <th>Last modified (OL record)</th>
+                    <td id="last-modified"></td>
+                </tr>
+                <tr>
+                    <th>Record revision</th>
+                    <td id="revision"></td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="record-link-box" id="record-link-box">
+            <span id="record-link"></span>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        Prince Duepa · Site for IT 4403 · Fall 2026
+    </footer>
+
+    <script>
+        (function () {
+            const NA = "Not available";
+            const JSON_URL = "openlibrary-book.json";
+            const OPENLIBRARY_ROOT_URL = "https://openlibrary.org";
+
+            /**
+            * Get an element by `id`
+            */
+            function getElement(id) { return document.getElementById(id); }
+
+            /**
+            * Return `true` if `v` is undefined, null or an empty string
+            */
+            function isBlank(v) {
+                return v === undefined || v === null || String(v).trim() === "";
+            }
+
+            /**
+            * Return first element in `aray`
+            */
+            function first(aray) {
+                return Array.isArray(aray) && aray.length ? aray[0] : undefined;
+            }
+
+            /**
+             * Find the value of a source record with the given prefix,
+             * e.g. getSourceRecordId(["amazon:0140328726"], "amazon") -> "0140328726"
+             */
+            function getSourceRecordId(sourceRecords, prefix) {
+                if (!Array.isArray(sourceRecords)) return undefined;
+                const record = sourceRecords.find(r => String(r).startsWith(`${prefix}:`));
+                return record ? String(record).slice(prefix.length + 1) : undefined;
+            }
+
+            /**
+             * Set the text value on the specified element
+             */
+            function setText(id, value) {
+                const node = getElement(id);
+                if (!node) return;
+                node.textContent = isBlank(value) ? NA : String(value);
+            }
+
+            /**
+             * Turn specified element into a hyperlink
+             */
+            function setLink(id, text, href) {
+                const node = getElement(id);
+                if (!node) return;
+                node.textContent = "";
+                if (isBlank(text) || isBlank(href)) {
+                    node.textContent = NA;
+                    return;
+                }
+                const a = document.createElement("a");
+                a.href = href;
+                a.textContent = text;
+                node.appendChild(a);
+            }
+
+            /**
+             * Hide the specified element
+             */
+            function hide(id) {
+                const node = getElement(id);
+                if (node) node.hidden = true;
+            }
+
+            function languageName(key) {
+                if (isBlank(key)) return undefined;
+                const code = String(key).split("/").pop();
+                return code.toUpperCase();
+            }
+
+            // Returns a Promise that resolves to [{ key, name }, ...] in the original author order
+            function getAuthors(authors) {
+                const requests = authors
+                    .filter(a => a && !isBlank(a.key))
+                    .map(a => {
+                        return fetch(`${OPENLIBRARY_ROOT_URL}${a.key}.json`)
+                            .then(res => {
+                                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                                return res.json();
+                            })
+                            .then(data => ({ key: data.key, name: data.name }))
+                            .catch(err => {
+                                console.error(`Could not load author ${a.key}:`, err);
+                                return null; // keep going if one author fails
+                            });
+                    });
+
+                return Promise.all(requests).then(results => {
+                    return results.filter(r => r !== null && !isBlank(r.name));
+                });
+            }
+
+            function render(book) {
+                book = book || {};
+
+                // Title
+                setText("title", book.title);
+
+                // Cover (skip placeholder ids like -1)
+                const cover = getElement("cover");
+                const coverId = Array.isArray(book.covers)
+                    ? book.covers.find(c => c > 0)
+                    : undefined;
+                if (coverId) {
+                    cover.src = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+                    cover.alt = isBlank(book.title) ? "Book cover" : `Cover of ${book.title}`;
+                } else {
+                    cover.removeAttribute("src");
+                    cover.alt = "No cover available";
+                }
+
+                // async request to get author name from their IDs
+                const authorNode = getElement("author");
+                if (authorNode) authorNode.textContent = "Loading...";
+
+                const authorPromise = Array.isArray(book.authors) && book.authors.length
+                    ? getAuthors(book.authors)
+                    : Promise.resolve([]);
+
+                authorPromise.then(authorList => {
+                    if (!authorNode) return;
+                    authorNode.textContent = "";
+                    if (!authorList.length) {
+                        authorNode.textContent = NA;
+                    } else {
+                        authorList.forEach((item, i) => {
+                            if (i > 0) authorNode.appendChild(document.createTextNode(", "));
+                            const a = document.createElement("a");
+                            a.href = `${OPENLIBRARY_ROOT_URL}${item.key}`;
+                            a.textContent = item.name;
+                            authorNode.appendChild(a);
+                        });
+                    }
+                });
+
+                // Contributors
+                const contributions = Array.isArray(book.contributions) ? book.contributions : [];
+                if (!contributions.length) { hide("contributor-tr") }
+
+                // First sentence
+                const sentence = book.first_sentence && (book.first_sentence.value || book.first_sentence);
+                !isBlank(sentence) ? setText("first-sentence", `"${sentence}"`) : hide("quote-box");
+
+                // Edition information
+                setText("publisher", Array.isArray(book.publishers) ? book.publishers.join(", ") : undefined);
+                setText("publish-date", book.publish_date);
+                setText("pages", isBlank(book.number_of_pages) ? undefined : `${book.number_of_pages} pages`);
+                setText("isbn10", first(book.isbn_10));
+                setText("isbn13", first(book.isbn_13));
+                setText("language", languageName(book.languages && book.languages[0] && book.languages[0].key));
+                setText("contributor", contributions.length ? contributions.join(", ") : undefined);
+
+                // Additional identifiers
+                const ids = book.identifiers || {};
+                const workKey = book.works && book.works[0] && book.works[0].key;
+                const workId = isBlank(workKey) ? undefined : String(workKey).split("/").pop();
+                setLink("work", workId, isBlank(workKey) ? null : `${OPENLIBRARY_ROOT_URL}${workKey}`);
+
+                setLink("archive", book.ocaid, isBlank(book.ocaid) ? null : `https://archive.org/details/${book.ocaid}`);
+
+                const goodreads = first(ids.goodreads);
+                setLink("goodreads", goodreads, isBlank(goodreads) ? null : `https://www.goodreads.com/book/show/${goodreads}`);
+
+                const libraryThing = first(ids.librarything);
+                setLink("librarything", libraryThing, isBlank(libraryThing) ? null : `https://www.librarything.com/work/${libraryThing}`);
+
+                const amazonId = getSourceRecordId(book.source_records, "amazon");
+                setLink("amazon", amazonId, isBlank(amazonId) ? null : `https://www.amazon.com/dp/${amazonId}`);
+
+                const last_modified = book.last_modified ? book.last_modified.value : null
+                setText("last-modified", last_modified.split("T")[0]);
+                setText("revision", book.revision !== undefined ? book.revision : book.latest_revision);
+
+                // Record link
+                const recordId = isBlank(book.key) ? undefined : String(book.key).split("/").pop();
+                !recordId ? hide("record-link-box") :
+                    setLink("record-link", "View this edition on Open Library", `${OPENLIBRARY_ROOT_URL}${book.key}`);
+            }
+
+            // open JSON file using JS fetch
+            fetch(JSON_URL)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(render)
+                .catch(err => {
+                    console.error(`Could not load ${JSON_URL}:`, err);
+                    render({}); // fills every field with the fallback so the page still displays
+                });
+        })();
+    </script>
+</body>
+
+</html>
