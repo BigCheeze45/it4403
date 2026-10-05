@@ -348,6 +348,7 @@
             const NA = "Not available";
             const JSON_URL = "openlibrary-book.json";
             const OPENLIBRARY_ROOT_URL = "https://openlibrary.org";
+            const OL_COVER_URL = "https://covers.openlibrary.org/b/id";
 
             /**
             * Get an element by `id`
@@ -401,6 +402,7 @@
                 const a = document.createElement("a");
                 a.href = href;
                 a.textContent = text;
+                a.target = "_blank";
                 node.appendChild(a);
             }
 
@@ -452,7 +454,7 @@
                     ? book.covers.find(c => c > 0)
                     : undefined;
                 if (coverId) {
-                    cover.src = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+                    cover.src = `${OL_COVER_URL}/${coverId}-L.jpg`;
                     cover.alt = isBlank(book.title) ? "Book cover" : `Cover of ${book.title}`;
                 } else {
                     cover.removeAttribute("src");
@@ -478,6 +480,7 @@
                             const a = document.createElement("a");
                             a.href = `${OPENLIBRARY_ROOT_URL}${item.key}`;
                             a.textContent = item.name;
+                            a.target = "_blank"
                             authorNode.appendChild(a);
                         });
                     }

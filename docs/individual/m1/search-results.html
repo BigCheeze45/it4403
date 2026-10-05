@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1A1A1A;
+            background: #FFFFFF;
+            line-height: 1.5;
+        }
+
+        main {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 24px 24px 32px;
+        }
+
+        a {
+            color: #0B5FA5;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        a:focus-visible,
+        button:focus-visible {
+            outline: 3px solid #0B5FA5;
+            outline-offset: 2px;
+        }
+
+        .results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .book-card {
+            border: 1px solid #CCCCCC;
+            background: #FCFCFC;
+            padding: 18px;
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .card-thumb-wrapper {
+            width: 100px;
+            min-height: 140px;
+            background: #EAEAEA;
+            border: 1px dashed #999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .card-thumb-wrapper img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        .card-thumb-placeholder {
+            font-size: 0.75rem;
+            color: #6B6B6B;
+            padding: 8px;
+            font-weight: bold;
+        }
+
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .card-title {
+            margin: 0 0 2px 0;
+            font-size: 1.25rem;
+            line-height: 1.3;
+        }
+
+        .card-subtitle {
+            margin: 0 0 6px 0;
+            font-size: 0.95rem;
+            color: #555555;
+            font-style: italic;
+        }
+
+        .card-authors {
+            margin: 0 0 10px 0;
+            font-size: 0.95rem;
+            color: #333333;
+        }
+
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 4px 14px;
+            font-size: 0.88rem;
+            margin: 0 0 12px 0;
+            background: #F5F5F5;
+            padding: 10px 12px;
+            border: 1px solid #E0E0E0;
+        }
+
+        .metadata-grid dt {
+            font-weight: bold;
+            color: #555555;
+        }
+
+        .metadata-grid dd {
+            margin: 0;
+            color: #1A1A1A;
+        }
+
+        .card-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 2px 8px;
+            border: 1px solid #333333;
+            background: #FFFFFF;
+        }
+
+        .card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 0.9rem;
+            padding-top: 6px;
+            border-top: 1px dashed #CCCCCC;
+        }
+
+        .status-message {
+            padding: 16px;
+            border: 1px dashed #999999;
+            background: #FCFCFC;
+            font-style: italic;
+        }
+
+        @media (max-width: 520px) {
+            .book-card {
+                grid-template-columns: 1fr;
+            }
+
+            .card-thumb-wrapper {
+                width: 120px;
+                margin: 0 auto;
+            }
+        }
+
+        header.site-nav {
+            background: #EAEAEA;
+            border-bottom: 2px solid #333333;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        header.site-nav .brand {
+            font-weight: bold;
+            font-size: 1.05rem;
+            border: 1px dashed #999999;
+            padding: 6px 10px;
+        }
+
+        header.site-nav nav a {
+            margin-left: 18px;
+            color: #0B5FA5;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        header.site-nav nav a:focus-visible,
+        a:focus-visible,
+        button:focus-visible {
+            outline: 3px solid #0B5FA5;
+            outline-offset: 2px;
+        }
+
+        header.site-nav nav a[aria-current="page"] {
+            color: #1A1A1A;
+            background: #FFFFFF;
+            border: 1px solid #333333;
+            padding: 4px 8px;
+            text-decoration: none;
+        }
+
+        footer.site-footer {
+            border-top: 2px solid #333333;
+            background: #EAEAEA;
+            padding: 14px 24px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #333333;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+    <header class="site-nav">
+        <nav aria-label="Main navigation">
+            <a href="../../index.html">Home</a>
+            <a href="../../exercises.html">Exercises &amp; Labs</a>
+            <a href="../../projects.html" aria-current="page">Projects</a>
+        </nav>
+    </header>
+    <p class="page-label"></p>
+    <main id="main-content">
+        <ul id="results-list" class="results-list" aria-label="Book search results" style="display: none;"></ul>
+    </main>
+    <footer class="site-footer">
+        Prince Duepa · Site for IT 4403 · Fall 2026
+    </footer>
+
+    <script>
+        const OPENLIBRARY_ROOT_URL = "https://openlibrary.org";
+        const OL_AUTHOR_URL = "https://openlibrary.org/authors/";
+        const OL_COVER_URL = "https://covers.openlibrary.org/b/id";
+        const JSON_URL = "openlibrary-search.json"
+
+        $(document).ready(function () {
+            $.getJSON(JSON_URL)
+                .done(function (data) {
+                    $('#loading-state').hide();
+                    const $list = $('#results-list').show();
+
+                    if (!data.docs || data.docs.length === 0) {
+                        $list.append('<li><p class="status-message">No records found.</p></li>');
+                        return;
+                    }
+
+                    $.each(data.docs, function (index, doc) {
+                        const $item = $('<li></li>');
+                        const headingId = `book-title-${index}`;
+                        const $article = $(`<article class="book-card" aria-labelledby="${headingId}"></article>`);
+
+                        // cover
+                        const $thumbWrapper = $('<div class="card-thumb-wrapper"></div>');
+                        if (doc.cover_i) {
+                            $('<img>')
+                                .attr('alt', `Cover for ${doc.title || 'book'}`)
+                                .attr('src', `${OL_COVER_URL}/${doc.cover_i}-M.jpg`)
+                                .appendTo($thumbWrapper);
+                        } else {
+                            $('<span class="card-thumb-placeholder">No Cover Image</span>').appendTo($thumbWrapper);
+                        }
+                        $article.append($thumbWrapper);
+
+                        // content container
+                        const $content = $('<div class="card-content"></div>');
+
+                        // Title & Work Link
+                        const workUrl = doc.key ? `${OPENLIBRARY_ROOT_URL}${doc.key}` : '#';
+                        const $titleHeading = $(`<h2 class="card-title" id=${headingId}"></h2>`)
+                        $('<a></a>')
+                            .attr('href', workUrl)
+                            .attr('class', 'external-link')
+                            .attr('target', '_blank')
+                            .attr('rel', 'noopener noreferrer')
+                            .text(doc.title || 'Untitled')
+                            .appendTo($titleHeading);
+                        $content.append($titleHeading);
+
+                        // Subtitle
+                        if (doc.subtitle) {
+                            $('<p class="card-subtitle"></p>').text(doc.subtitle).appendTo($content);
+                        }
+
+                        // Authors
+                        if (doc.author_name && doc.author_name.length > 0) {
+                            const $authorsPara = $('<p class="card-authors"></p>');
+                            $.each(doc.author_name, function (i, name) {
+                                const authorKey = (doc.author_key && doc.author_key[i]) ? doc.author_key[i] : null;
+                                if (authorKey) {
+                                    const $authorLink = $('<a></a>')
+                                        .attr('href', `${OL_AUTHOR_URL}${authorKey}`)
+                                        .attr('class', 'external-link')
+                                        .attr('target', '_blank')
+                                        .attr('rel', 'noopener noreferrer')
+                                        .text(name);
+                                    $authorsPara.append($authorLink);
+                                } else {
+                                    $authorsPara.append(document.createTextNode(name));
+                                }
+                                if (i < doc.author_name.length - 1) {
+                                    $authorsPara.append(document.createTextNode(', '));
+                                }
+                            });
+                            $content.append($authorsPara);
+                        }
+
+                        // Badges
+                        const $badges = $('<div class="card-badges"></div>');
+                        if (doc.ebook_access === 'borrowable') {
+                            $('<span class="badge">Borrowable eBook</span>').appendTo($badges);
+                        } else {
+                            $('<span class="badge">No eBook Available</span>').appendTo($badges);
+                        }
+                        if (doc.edition_count) {
+                            $('<span class="badge"></span>')
+                                .text(doc.edition_count + (doc.edition_count === 1 ? ' Edition' : ' Editions'))
+                                .appendTo($badges);
+                        }
+                        $content.append($badges);
+
+                        // Metadata Definition List
+                        const $metaGrid = $('<dl class="metadata-grid"></dl>');
+
+                        if (doc.first_publish_year) {
+                            $('<dt>First Published</dt>').appendTo($metaGrid);
+                            $('<dd></dd>').text(doc.first_publish_year).appendTo($metaGrid);
+                        }
+
+                        if (doc.publisher && doc.publisher.length > 0) {
+                            $('<dt>Publisher</dt>').appendTo($metaGrid);
+                            $('<dd></dd>').text(doc.publisher.slice(0, 3).join(', ')).appendTo($metaGrid);
+                        }
+
+                        if (doc.isbn && doc.isbn.length > 0) {
+                            $('<dt>ISBN</dt>').appendTo($metaGrid);
+                            $('<dd></dd>').text(doc.isbn[0]).appendTo($metaGrid);
+                        }
+
+                        if (doc.language && doc.language.length > 0) {
+                            $('<dt>Language</dt>').appendTo($metaGrid);
+                            $('<dd></dd>').text(doc.language.join(', ')).appendTo($metaGrid);
+                        }
+
+                        if (doc.cover_edition_key) {
+                            $('<dt>Cover Edition</dt>').appendTo($metaGrid);
+
+                            const editionUrl = doc.key ? `${OPENLIBRARY_ROOT_URL}/${doc.key}` : '#';
+                            const $link = $('<a></a>')
+                                .attr('href', editionUrl)
+                                .attr('class', 'external-link')
+                                .attr('target', '_blank')
+                                .attr('rel', 'noopener noreferrer')
+                                .text(doc.cover_edition_key);
+
+                            $('<dd></dd>').append($link).appendTo($metaGrid);
+                        }
+
+                        if (doc.ia && doc.ia.length > 0) {
+                            $('<dt>Internet Archive ID</dt>').appendTo($metaGrid);
+                            $('<dd></dd>').append($('<code></code>').text(doc.ia[0])).appendTo($metaGrid);
+                        }
+
+                        $content.append($metaGrid);
+
+                        // Action Links
+                        const $actions = $('<div class="card-actions"></div>');
+                        if (doc.key) {
+                            $('<a></a>')
+                                .attr('href', 'https://openlibrary.org' + doc.key)
+                                .attr('class', 'external-link')
+                                .attr('target', '_blank')
+                                .attr('rel', 'noopener noreferrer')
+                                .text('Open Library Record')
+                                .appendTo($actions);
+                        }
+
+                        if (doc.ia && doc.ia.length > 0) {
+                            $('<a></a>')
+                                .attr('href', 'https://archive.org/details/' + encodeURIComponent(doc.ia[0]))
+                                .attr('class', 'external-link')
+                                .attr('target', '_blank')
+                                .attr('rel', 'noopener noreferrer')
+                                .text('Internet Archive Reader')
+                                .appendTo($actions);
+                        }
+
+                        $content.append($actions);
+                        $article.append($content);
+                        $item.append($article);
+                        $list.append($item);
+                    });
+                })
+                .fail(function (jqxhr, textStatus, error) {
+                    $('#loading-state')
+                        .text('Error loading search results: ' + (error || textStatus))
+                        .css('color', '#A00');
+                });
+        });
+    </script>
+</body>
+
+</html>
