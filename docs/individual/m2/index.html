@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Search</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+    <header class="site-nav">
+        <nav aria-label="Main navigation">
+            <a href="index.html" aria-current="page">Search</a>
+            <a href="shelf.html">My Shelf</a>
+            <a href="../../index.html">Return to course site</a>
+        </nav>
+    </header>
+
+    <main id="main-content">
+        <h1>Book Search</h1>
+
+        <form id="search-form" class="search-form" role="search">
+            <label for="search-input">Title, author or subject</label>
+            <div class="search-row">
+                <input id="search-input" type="search" autocomplete="off">
+                <button type="submit">Search</button>
+            </div>
+        </form>
+
+        <p id="status" class="status-message" role="status" aria-live="polite" hidden></p>
+
+        <div class="pager pager-top" hidden>
+            <div class="pager-field">
+                <label for="per-page">Results per page</label>
+                <select id="per-page">
+                    <option value="30">30</option>
+                    <option value="40">40</option>
+                    <option value="50">50</option>
+                    <option value="60">60</option>
+                </select>
+            </div>
+            <div class="pager-nav">
+                <button type="button" class="prev">Previous</button>
+                <label for="page-select-top">Page</label>
+                <select id="page-select-top" class="page-select"></select>
+                <span class="page-total"></span>
+                <button type="button" class="next">Next</button>
+            </div>
+        </div>
+
+        <ul id="results" class="results-list" aria-label="Book search results"></ul>
+
+        <div class="pager pager-bottom" hidden>
+            <div class="pager-nav">
+                <button type="button" class="prev">Previous</button>
+                <label for="page-select-bottom">Page</label>
+                <select id="page-select-bottom" class="page-select"></select>
+                <span class="page-total"></span>
+                <button type="button" class="next">Next</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        Prince Duepa · Site for IT 4403 · Fall 2026
+    </footer>
+
+    <script>
+        $(function () {
+            var DEFAULT_PER_PAGE = 30;
+            var PER_PAGE_OPTIONS = [30, 40, 50, 60];
+            var MAX_PAGES = 100; // keeps the page dropdown usable for very large result sets
+
+            var $form = $('#search-form');
+            var $input = $('#search-input');
+            var $status = $('#status');
+            var $results = $('#results');
+            var $pagers = $('.pager');
+            var $perPage = $('#per-page');
+            var $pageSelects = $('.page-select');
+            var $prev = $('.prev');
+            var $next = $('.next');
+
+            var state = { term: '', page: 1, perPage: DEFAULT_PER_PAGE, total: 0 };
+
+            function setStatus(msg, isError) {
+                $status.text(msg).toggleClass('error', !!isError).prop('hidden', !msg);
+            }
+
+            function totalPages() {
+                return Math.min(Math.ceil(state.total / state.perPage), MAX_PAGES);
+            }
+
+            // Build the Open Library search URL from the current search state
+            function buildSearchUrl() {
+                var url = new URL('https://openlibrary.org/search.json');
+                url.searchParams.set('q', state.term);
+                url.searchParams.set('fields', 'key,title,cover_i');
+                url.searchParams.set('limit', state.perPage);
+                url.searchParams.set('page', state.page);
+                return url.toString();
+            }
+
+            // "/works/OL45804W" -> "OL45804W"
+            function workId(key) {
+                return key.split('/').pop();
+            }
+
+            function coverUrl(coverId) {
+                return coverId ? 'https://covers.openlibrary.org/b/id/' + encodeURIComponent(coverId) + '-M.jpg' : null;
+            }
+
+            // Search results carry `cover_i`; work/edition records use a `covers` array
+            // (which can hold placeholder ids like -1). Use whichever is available.
+            function getCoverId(record) {
+                if (record.cover_i > 0) return record.cover_i;
+                return Array.isArray(record.covers) ? record.covers.find(function (c) { return c > 0; }) : undefined;
+            }
+
+            function renderBook(book, index) {
+                var headingId = 'book-title-' + index;
+                var title = book.title || 'Untitled';
+
+                var $thumb = $('<div class="card-thumb-wrapper">');
+                var src = coverUrl(getCoverId(book));
+                if (src) {
+                    $thumb.append($('<img>').attr({ src: src, alt: 'Cover for ' + title, loading: 'lazy' }));
+                } else {
+                    $thumb.append('<span class="card-thumb-placeholder">No Cover Image</span>');
+                }
+
+                var $heading = $('<h2 class="card-title">').attr('id', headingId).append(
+                    $('<a>')
+                        .attr('href', 'book.html?id=' + encodeURIComponent(workId(book.key)))
+                        .text(title)
+                );
+
+                var $article = $('<article class="book-card">')
+                    .attr('aria-labelledby', headingId)
+                    .append($thumb, $('<div class="card-content">').append($heading));
+
+                return $('<li>').append($article);
+            }
+
+            // Keep the URL in sync so Back from a details page restores this exact view
+            function updateUrl() {
+                var params = new URLSearchParams({ q: state.term, page: state.page, limit: state.perPage });
+                history.replaceState(null, '', '?' + params.toString());
+            }
+
+            function updatePager() {
+                var pages = totalPages();
+
+                $pageSelects.empty();
+                for (var p = 1; p <= pages; p++) {
+                    $pageSelects.append($('<option>').val(p).text(p));
+                }
+                $pageSelects.val(state.page);
+                $perPage.val(state.perPage);
+
+                $('.page-total').text('of ' + pages.toLocaleString());
+                $prev.prop('disabled', state.page <= 1);
+                $next.prop('disabled', state.page >= pages);
+                $pagers.prop('hidden', state.total === 0);
+            }
+
+            function renderResults(data) {
+                var books = data.docs || [];
+                state.total = data.numFound || 0;
+
+                $results.empty().append(books.map(renderBook));
+                updatePager();
+
+                if (books.length === 0) {
+                    setStatus('No books found. Try a different title, author or subject.');
+                } else {
+                    var first = (state.page - 1) * state.perPage + 1;
+                    var last = first + books.length - 1;
+                    setStatus('Showing ' + first.toLocaleString() + '–' + last.toLocaleString() +
+                        ' of ' + state.total.toLocaleString() + ' results');
+                }
+            }
+
+            function loadPage() {
+                setStatus('Searching…');
+                $results.empty();
+                $pagers.prop('hidden', true);
+                updateUrl();
+
+                fetch(buildSearchUrl())
+                    .then(function (response) {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        renderResults(data);
+                        window.scrollTo(0, 0);
+                    })
+                    .catch(function () {
+                        setStatus('Couldn’t reach Open Library. Check your connection and search again.', true);
+                    });
+            }
+
+            function goToPage(page) {
+                var pages = totalPages();
+                state.page = Math.min(Math.max(page, 1), pages || 1);
+                loadPage();
+            }
+
+            // New search: back to page 1, keep the chosen page size
+            $form.on('submit', function (e) {
+                e.preventDefault();
+                var term = $input.val().trim();
+                if (!term) {
+                    setStatus('Enter a title, author or subject to search.');
+                    $input.trigger('focus');
+                    return;
+                }
+                state.term = term;
+                state.total = 0;
+                goToPage(1);
+            });
+
+            $perPage.on('change', function () {
+                state.perPage = parseInt($(this).val(), 10);
+                goToPage(1); // page boundaries change, so start over
+            });
+
+            $pageSelects.on('change', function () {
+                goToPage(parseInt($(this).val(), 10));
+            });
+
+            $prev.on('click', function () { goToPage(state.page - 1); });
+            $next.on('click', function () { goToPage(state.page + 1); });
+
+            // Restore a view from the URL (e.g. returning from a details page)
+            var params = new URLSearchParams(window.location.search);
+            var q = params.get('q');
+            var limit = parseInt(params.get('limit'), 10);
+            var page = parseInt(params.get('page'), 10);
+            if (PER_PAGE_OPTIONS.indexOf(limit) !== -1) state.perPage = limit;
+            $perPage.val(state.perPage);
+
+            if (q) {
+                $input.val(q);
+                state.term = q;
+                state.page = page > 0 ? Math.min(page, MAX_PAGES) : 1;
+                loadPage();
+            }
+        });
+    </script>
+</body>
+
+</html>

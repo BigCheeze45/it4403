@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Details</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="site-nav">
+        <nav aria-label="Main navigation">
+            <a href="index.html">Search</a>
+            <a href="shelf.html">My Shelf</a>
+            <a href="../../index.html">Return to course site</a>
+        </nav>
+    </header>
+
+    <main>
+
+        <p id="status" class="status-message" role="status" aria-live="polite" hidden></p>
+
+        <section class="hero-box">
+            <div class="cover-frame">
+                <img id="cover" alt="">
+            </div>
+            <div>
+                <h1 id="title"></h1>
+                <p class="author-line">
+                    <span id="author-label"></span> <span id="author"></span>
+                </p>
+
+                <div class="description-box" id="description-box" hidden>
+                    <h2>Description</h2>
+                    <p id="description"></p>
+                </div>
+
+                <div class="subjects-box" id="subjects-box" hidden>
+                    <h2>Subjects</h2>
+                    <ul class="subject-list" id="subjects"></ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="box">
+            <h2>Edition Information</h2>
+            <table class="meta-table">
+                <tr>
+                    <th>Publisher</th>
+                    <td id="publisher"></td>
+                </tr>
+                <tr>
+                    <th>Publication date</th>
+                    <td id="publish-date"></td>
+                </tr>
+                <tr>
+                    <th>Page count</th>
+                    <td id="pages"></td>
+                </tr>
+                <tr>
+                    <th>ISBN-10</th>
+                    <td id="isbn10"></td>
+                </tr>
+                <tr>
+                    <th>ISBN-13</th>
+                    <td id="isbn13"></td>
+                </tr>
+                <tr>
+                    <th>Language</th>
+                    <td id="language"></td>
+                </tr>
+                <tr id="contributor-tr">
+                    <th>Contributor</th>
+                    <td id="contributor"></td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="box">
+            <h2>Additional Identifiers</h2>
+            <table class="meta-table">
+                <tr>
+                    <th>Open Library work</th>
+                    <td id="work"></td>
+                </tr>
+                <tr>
+                    <th>Internet Archive copy</th>
+                    <td id="archive"></td>
+                </tr>
+                <tr>
+                    <th>Goodreads ID</th>
+                    <td id="goodreads"></td>
+                </tr>
+                <tr>
+                    <th>LibraryThing ID</th>
+                    <td id="librarything"></td>
+                </tr>
+                <tr>
+                    <th>Amazon ID</th>
+                    <td id="amazon"></td>
+                </tr>
+                <tr>
+                    <th>Last modified (OL record)</th>
+                    <td id="last-modified"></td>
+                </tr>
+                <tr>
+                    <th>Record revision</th>
+                    <td id="revision"></td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="record-link-box" id="record-link-box">
+            <span id="record-link"></span>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        Prince Duepa · Site for IT 4403 · Fall 2026
+    </footer>
+
+    <script>
+        (function () {
+            const NA = "Not available";
+            const OPENLIBRARY_ROOT_URL = "https://openlibrary.org";
+            const OL_COVER_URL = "https://covers.openlibrary.org/b/id";
+
+            /**
+            * Get an element by `id`
+            */
+            function getElement(id) { return document.getElementById(id); }
+
+            /**
+            * Return `true` if `v` is undefined, null or an empty string
+            */
+            function isBlank(v) {
+                return v === undefined || v === null || String(v).trim() === "";
+            }
+
+            /**
+            * Return first element in `aray`
+            */
+            function first(aray) {
+                return Array.isArray(aray) && aray.length ? aray[0] : undefined;
+            }
+
+            /**
+             * Find the value of a source record with the given prefix,
+             * e.g. getSourceRecordId(["amazon:0140328726"], "amazon") -> "0140328726"
+             */
+            function getSourceRecordId(sourceRecords, prefix) {
+                if (!Array.isArray(sourceRecords)) return undefined;
+                const record = sourceRecords.find(r => String(r).startsWith(`${prefix}:`));
+                return record ? String(record).slice(prefix.length + 1) : undefined;
+            }
+
+            /**
+             * Set the text value on the specified element
+             */
+            function setText(id, value) {
+                const node = getElement(id);
+                if (!node) return;
+                node.textContent = isBlank(value) ? NA : String(value);
+            }
+
+            /**
+             * Turn specified element into a hyperlink
+             */
+            function setLink(id, text, href) {
+                const node = getElement(id);
+                if (!node) return;
+                node.textContent = "";
+                if (isBlank(text) || isBlank(href)) {
+                    node.textContent = NA;
+                    return;
+                }
+                const a = document.createElement("a");
+                a.href = href;
+                a.textContent = text;
+                a.target = "_blank";
+                node.appendChild(a);
+            }
+
+            /**
+             * Hide the specified element
+             */
+            function hide(id) {
+                const node = getElement(id);
+                if (node) node.hidden = true;
+            }
+
+            /**
+             * Show a message in the status area (pass nothing to clear it)
+             */
+            function showStatus(message) {
+                const node = getElement("status");
+                if (!node) return;
+                node.textContent = message || "";
+                node.classList.toggle("error", Boolean(message));
+                node.hidden = !message;
+            }
+
+            /**
+             * Read the Work ID (e.g. "OL45804W") from the page URL: details.html?id=OL45804W
+             * Returns undefined when it is missing or not shaped like an Open Library work ID.
+             */
+            function getWorkIdFromUrl() {
+                const id = new URLSearchParams(window.location.search).get("id");
+                return id && /^OL\d+W$/i.test(id.trim()) ? id.trim().toUpperCase() : undefined;
+            }
+
+            /**
+             * Build the API request URL for a Work ID. The editions endpoint returns
+             * edition records (publisher, ISBNs, ...), which is what this page displays.
+             */
+            function buildEditionsUrl(workId) {
+                return `${OPENLIBRARY_ROOT_URL}/works/${encodeURIComponent(workId)}/editions.json?limit=1`;
+            }
+
+            /**
+             * Build the API request URL for the work record, which holds the description
+             */
+            function buildWorkUrl(workId) {
+                return `${OPENLIBRARY_ROOT_URL}/works/${encodeURIComponent(workId)}.json`;
+            }
+
+            /**
+             * Fetch a URL and parse the JSON response
+             */
+            function fetchJson(url) {
+                return fetch(url).then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                });
+            }
+
+            /**
+             * Open Library descriptions are either a string or { type, value }.
+             * Returns the text, or undefined when there is none.
+             */
+            function descriptionText(record) {
+                if (!record) return undefined;
+                const d = record.description;
+                const text = typeof d === "string" ? d : (d && typeof d === "object" ? d.value : undefined);
+                return typeof text === "string" && text.trim() !== "" ? text.trim() : undefined;
+            }
+
+            /**
+             * Show the description, or keep its box hidden when there isn't one
+             */
+            function renderDescription(text) {
+                const box = getElement("description-box");
+                if (!box) return;
+                if (isBlank(text)) { box.hidden = true; return; }
+                getElement("description").textContent = text;
+                box.hidden = false;
+            }
+
+            /**
+             * Find the cover ID in a record. Search results use `cover_i`;
+             * work and edition records use a `covers` array, which can hold
+             * placeholder ids like -1 that are skipped.
+             */
+            function getCoverId(record) {
+                if (!record) return undefined;
+                if (record.cover_i > 0) return record.cover_i;
+                return Array.isArray(record.covers) ? record.covers.find(c => c > 0) : undefined;
+            }
+
+            /**
+             * Build the cover image URL from a cover ID (size: S, M or L)
+             */
+            function buildCoverUrl(coverId, size) {
+                return `${OL_COVER_URL}/${encodeURIComponent(coverId)}-${size}.jpg`;
+            }
+
+            /**
+             * Show the cover image, or the "no cover" alt text when there is no cover ID
+             */
+            function renderCover(coverId, title) {
+                const cover = getElement("cover");
+                if (!cover) return;
+                if (coverId) {
+                    cover.src = buildCoverUrl(coverId, "L");
+                    cover.alt = isBlank(title) ? "Book cover" : `Cover of ${title}`;
+                } else {
+                    cover.removeAttribute("src");
+                    cover.alt = "No cover available";
+                }
+            }
+
+            const MAX_SUBJECTS = 10;
+
+            /**
+             * Return up to MAX_SUBJECTS unique, non-blank subjects from a record
+             */
+            function getSubjects(record) {
+                if (!record || !Array.isArray(record.subjects)) return [];
+                const unique = [];
+                record.subjects.forEach(s => {
+                    const name = typeof s === "string" ? s.trim() : "";
+                    if (name && !unique.includes(name)) unique.push(name);
+                });
+                return unique.slice(0, MAX_SUBJECTS);
+            }
+
+            /**
+             * Show the subjects, or keep their box hidden when there are none
+             */
+            function renderSubjects(subjects) {
+                const box = getElement("subjects-box");
+                const list = getElement("subjects");
+                if (!box || !list) return;
+                list.textContent = "";
+                subjects.forEach(name => {
+                    const li = document.createElement("li");
+                    li.textContent = name;
+                    list.appendChild(li);
+                });
+                box.hidden = subjects.length === 0;
+            }
+
+            function languageName(key) {
+                if (isBlank(key)) return undefined;
+                const code = String(key).split("/").pop();
+                return code.toUpperCase();
+            }
+
+            // Returns a Promise that resolves to [{ key, name }, ...] in the original author order
+            function getAuthors(authors) {
+                const requests = authors
+                    .filter(a => a && !isBlank(a.key))
+                    .map(a => {
+                        return fetch(`${OPENLIBRARY_ROOT_URL}${a.key}.json`)
+                            .then(res => {
+                                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                                return res.json();
+                            })
+                            .then(data => ({ key: data.key, name: data.name }))
+                            .catch(err => {
+                                console.error(`Could not load author ${a.key}:`, err);
+                                return null; // keep going if one author fails
+                            });
+                    });
+
+                return Promise.all(requests).then(results => {
+                    return results.filter(r => r !== null && !isBlank(r.name));
+                });
+            }
+
+            function render(book) {
+                book = book || {};
+
+                // Title
+                setText("title", book.title);
+                if (!isBlank(book.title)) document.title = `${book.title} | Book Details`;
+
+                // async request to get author name from their IDs
+                const authorNode = getElement("author");
+                if (authorNode) authorNode.textContent = "Loading...";
+
+                const authorPromise = Array.isArray(book.authors) && book.authors.length
+                    ? getAuthors(book.authors)
+                    : Promise.resolve([]);
+
+                authorPromise.then(authorList => {
+                    if (!authorNode) return;
+                    authorNode.textContent = "";
+                    if (!authorList.length) {
+                        authorNode.textContent = NA;
+                    } else {
+                        authorList.forEach((item, i) => {
+                            if (i > 0) authorNode.appendChild(document.createTextNode(", "));
+                            const a = document.createElement("a");
+                            a.href = `${OPENLIBRARY_ROOT_URL}${item.key}`;
+                            a.textContent = item.name;
+                            a.target = "_blank"
+                            authorNode.appendChild(a);
+                        });
+                    }
+                });
+
+                // Contributors
+                const contributions = Array.isArray(book.contributions) ? book.contributions : [];
+                if (!contributions.length) { hide("contributor-tr") }
+
+                // Edition information
+                setText("publisher", Array.isArray(book.publishers) ? book.publishers.join(", ") : undefined);
+                setText("publish-date", book.publish_date);
+                setText("pages", isBlank(book.number_of_pages) ? undefined : `${book.number_of_pages} pages`);
+                setText("isbn10", first(book.isbn_10));
+                setText("isbn13", first(book.isbn_13));
+                setText("language", languageName(book.languages && book.languages[0] && book.languages[0].key));
+                setText("contributor", contributions.length ? contributions.join(", ") : undefined);
+
+                // Additional identifiers
+                const ids = book.identifiers || {};
+                const workKey = book.works && book.works[0] && book.works[0].key;
+                const workId = isBlank(workKey) ? undefined : String(workKey).split("/").pop();
+                setLink("work", workId, isBlank(workKey) ? null : `${OPENLIBRARY_ROOT_URL}${workKey}`);
+
+                setLink("archive", book.ocaid, isBlank(book.ocaid) ? null : `https://archive.org/details/${book.ocaid}`);
+
+                const goodreads = first(ids.goodreads);
+                setLink("goodreads", goodreads, isBlank(goodreads) ? null : `https://www.goodreads.com/book/show/${goodreads}`);
+
+                const libraryThing = first(ids.librarything);
+                setLink("librarything", libraryThing, isBlank(libraryThing) ? null : `https://www.librarything.com/work/${libraryThing}`);
+
+                const amazonId = getSourceRecordId(book.source_records, "amazon");
+                setLink("amazon", amazonId, isBlank(amazonId) ? null : `https://www.amazon.com/dp/${amazonId}`);
+
+                const lastModified = book.last_modified ? book.last_modified.value : undefined;
+                setText("last-modified", isBlank(lastModified) ? undefined : lastModified.split("T")[0]);
+                setText("revision", book.revision !== undefined ? book.revision : book.latest_revision);
+
+                // Record link
+                const recordId = isBlank(book.key) ? undefined : String(book.key).split("/").pop();
+                !recordId ? hide("record-link-box") :
+                    setLink("record-link", "View this edition on Open Library", `${OPENLIBRARY_ROOT_URL}${book.key}`);
+            }
+
+            // Read the Work ID, build the request URL, and fetch the record
+            const requestedWorkId = getWorkIdFromUrl();
+
+            if (!requestedWorkId) {
+                showStatus("No book selected. Search for a book or open one from your shelf.");
+                render({});
+                renderCover(undefined);
+                return;
+            }
+
+            // Edition record: publisher, ISBNs, cover, authors, ...
+            const editionRequest = fetchJson(buildEditionsUrl(requestedWorkId))
+                .then(data => {
+                    const edition = first(data.entries);
+                    if (!edition) {
+                        showStatus(`No edition records were found for ${requestedWorkId}.`);
+                        render({});
+                        return null;
+                    }
+                    render(edition);
+                    return edition;
+                })
+                .catch(err => {
+                    console.error(`Could not load work ${requestedWorkId}:`, err);
+                    showStatus("Couldn\u2019t load this book from Open Library. Check your connection and try again.");
+                    render({}); // fills every field with the fallback so the page still displays
+                    return null;
+                });
+
+            // Work record: the description lives here. If it can't be loaded, just skip it.
+            const workRequest = fetchJson(buildWorkUrl(requestedWorkId)).catch(err => {
+                console.error(`Could not load description for ${requestedWorkId}:`, err);
+                return null;
+            });
+
+            Promise.all([editionRequest, workRequest]).then(([edition, work]) => {
+                // Work cover first (it matches the search results), then the edition's
+                renderCover(
+                    getCoverId(work) || getCoverId(edition),
+                    (work && work.title) || (edition && edition.title)
+                );
+                renderDescription(descriptionText(work) || descriptionText(edition));
+                const workSubjects = getSubjects(work);
+                renderSubjects(workSubjects.length ? workSubjects : getSubjects(edition));
+            });
+        })();
+    </script>
+</body>
+
+</html>

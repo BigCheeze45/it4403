@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shelf</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="site-nav">
+        <nav aria-label="Main navigation">
+            <a href="index.html">Search</a>
+            <a href="shelf.html" aria-current="page">My Shelf</a>
+            <a href="../../index.html">Return to course site</a>
+        </nav>
+    </header>
+
+    <main id="main-content">
+        <h1>My Shelf</h1>
+
+        <p id="status" class="status-message" role="status" aria-live="polite" hidden></p>
+        <ul id="results" class="results-list" aria-label="Books on my shelf"></ul>
+    </main>
+
+    <footer class="site-footer">
+        Prince Duepa · Site for IT 4403 · Fall 2026
+    </footer>
+
+    <script>
+        (function () {
+            const OPENLIBRARY_ROOT_URL = "https://openlibrary.org";
+            const OL_COVER_URL = "https://covers.openlibrary.org/b/id";
+
+            // Work IDs of the five books on the shelf
+            const WORK_IDS = [
+                "OL21964504W",
+                "OL4467663W",
+                "OL24337267W",
+                "OL8859417W",
+                "OL17360507W"
+            ];
+
+            const statusEl = document.getElementById("status");
+            const listEl = document.getElementById("results");
+
+            function showStatus(message, isError) {
+                statusEl.textContent = message || "";
+                statusEl.classList.toggle("error", Boolean(isError));
+                statusEl.hidden = !message;
+            }
+
+            function fetchJson(url) {
+                return fetch(url).then(function (res) {
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    return res.json();
+                });
+            }
+
+            // Cover ID from a record: `cover_i` (search results) or the first real
+            // entry in a `covers` array (work/edition records; -1 is a placeholder)
+            function getCoverId(record) {
+                if (!record) return undefined;
+                if (record.cover_i > 0) return record.cover_i;
+                return Array.isArray(record.covers) ? record.covers.find(function (c) { return c > 0; }) : undefined;
+            }
+
+            function buildCoverUrl(coverId) {
+                return OL_COVER_URL + "/" + encodeURIComponent(coverId) + "-M.jpg";
+            }
+
+            // Build the API request URL for a Work ID
+            function buildWorkUrl(workId) {
+                return OPENLIBRARY_ROOT_URL + "/works/" + encodeURIComponent(workId) + ".json";
+            }
+
+            // Work ID -> { workId, title, coverId }. If the request fails, the book still
+            // appears (labelled with its Work ID) because the link only needs the ID.
+            function loadBook(workId) {
+                return fetchJson(buildWorkUrl(workId))
+                    .then(function (work) {
+                        return { workId: workId, title: work.title || workId, coverId: getCoverId(work) };
+                    })
+                    .catch(function (err) {
+                        console.error("Could not load " + workId + ":", err);
+                        return { workId: workId, title: workId, coverId: undefined, failed: true };
+                    });
+            }
+
+            // Same card layout as the search results page
+            function renderBook(book, index) {
+                const headingId = "book-title-" + index;
+
+                const thumb = document.createElement("div");
+                thumb.className = "card-thumb-wrapper";
+                if (book.coverId) {
+                    const img = document.createElement("img");
+                    img.src = buildCoverUrl(book.coverId);
+                    img.alt = "Cover for " + book.title;
+                    img.loading = "lazy";
+                    thumb.appendChild(img);
+                } else {
+                    const span = document.createElement("span");
+                    span.className = "card-thumb-placeholder";
+                    span.textContent = "No Cover Image";
+                    thumb.appendChild(span);
+                }
+
+                const heading = document.createElement("h2");
+                heading.className = "card-title";
+                heading.id = headingId;
+                const link = document.createElement("a");
+                link.href = "book.html?id=" + encodeURIComponent(book.workId);
+                link.textContent = book.title;
+                heading.appendChild(link);
+
+                const content = document.createElement("div");
+                content.className = "card-content";
+                content.appendChild(heading);
+
+                const article = document.createElement("article");
+                article.className = "book-card";
+                article.setAttribute("aria-labelledby", headingId);
+                article.appendChild(thumb);
+                article.appendChild(content);
+
+                const li = document.createElement("li");
+                li.appendChild(article);
+                return li;
+            }
+
+            showStatus("Loading your shelf…");
+
+            Promise.all(WORK_IDS.map(loadBook)).then(function (books) {
+                books.forEach(function (book, index) {
+                    listEl.appendChild(renderBook(book, index));
+                });
+
+                const failed = books.filter(function (b) { return b.failed; }).length;
+                showStatus(
+                    failed ? failed + " of " + books.length + " books couldn\u2019t be loaded from Open Library. Reload to try again." : "",
+                    failed > 0
+                );
+            });
+        })();
+    </script>
+</body>
+
+</html>

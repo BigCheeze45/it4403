@@ -1,0 +1,371 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #1A1A1A;
+    background: #FFFFFF;
+    line-height: 1.5;
+}
+
+main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 24px 24px 32px;
+}
+
+h1 {
+    margin: 0 0 16px;
+    font-size: 1.6rem;
+}
+
+a {
+    color: #0B5FA5;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid #0B5FA5;
+    outline-offset: 2px;
+}
+
+/* Header / footer */
+header.site-nav {
+    background: #EAEAEA;
+    border-bottom: 2px solid #333333;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+header.site-nav nav a {
+    margin-right: 18px;
+}
+
+header.site-nav nav a[aria-current="page"] {
+    color: #1A1A1A;
+    background: #FFFFFF;
+    border: 1px solid #333333;
+    padding: 4px 8px;
+    text-decoration: none;
+}
+
+footer.site-footer {
+    border-top: 2px solid #333333;
+    background: #EAEAEA;
+    padding: 14px 24px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #333333;
+}
+
+/* Search form */
+.search-form {
+    margin: 0 0 24px;
+}
+
+.search-form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.search-row {
+    display: flex;
+    gap: 10px;
+}
+
+.search-form input {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+    font: inherit;
+    color: #1A1A1A;
+    background: #FFFFFF;
+    border: 1px solid #333333;
+}
+
+button {
+    font: inherit;
+    font-weight: bold;
+    padding: 8px 18px;
+    color: #FFFFFF;
+    background: #0B5FA5;
+    border: 1px solid #333333;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #084878;
+}
+
+/* Pagination */
+.pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin: 0 0 20px;
+    padding: 10px 12px;
+    background: #F5F5F5;
+    border: 1px solid #E0E0E0;
+}
+
+.pager.pager-bottom {
+    margin: 20px 0 0;
+    justify-content: center;
+}
+
+.pager[hidden] {
+    display: none;
+}
+
+.pager-field,
+.pager-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pager label {
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.page-total {
+    font-size: 0.9rem;
+}
+
+select {
+    font: inherit;
+    padding: 6px 8px;
+    color: #1A1A1A;
+    background: #FFFFFF;
+    border: 1px solid #333333;
+}
+
+select:focus-visible {
+    outline: 3px solid #0B5FA5;
+    outline-offset: 2px;
+}
+
+button:disabled {
+    color: #6B6B6B;
+    background: #EAEAEA;
+    border-color: #999999;
+    cursor: default;
+}
+
+/* Status */
+.status-message {
+    margin: 0 0 20px;
+    padding: 16px;
+    border: 1px dashed #999999;
+    background: #FCFCFC;
+    font-style: italic;
+}
+
+.status-message.error {
+    color: #A00000;
+    border-color: #A00000;
+}
+
+/* Results */
+.results-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.book-card {
+    border: 1px solid #CCCCCC;
+    background: #FCFCFC;
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 18px;
+    align-items: center;
+}
+
+.card-thumb-wrapper {
+    width: 100px;
+    min-height: 140px;
+    background: #EAEAEA;
+    border: 1px dashed #999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+.card-thumb-wrapper img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+.card-thumb-placeholder {
+    font-size: 0.75rem;
+    color: #6B6B6B;
+    padding: 8px;
+    font-weight: bold;
+}
+
+.card-title {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.3;
+}
+
+@media (max-width: 520px) {
+    .book-card {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .card-thumb-wrapper {
+        width: 120px;
+    }
+}
+
+/* Details page */
+.box {
+    border: 1px dashed #999999;
+    padding: 18px;
+    margin-bottom: 22px;
+    background: #FCFCFC;
+}
+
+.box h2 {
+    margin-top: 0;
+}
+
+.hero-box {
+    border: 2px solid #333333;
+    background: #F5F5F5;
+    padding: 22px;
+    margin-bottom: 22px;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 20px;
+}
+
+.hero-box h1 {
+    margin: 0 0 4px 0;
+    font-size: 1.6rem;
+}
+
+.hero-box .author-line {
+    margin: 0 0 14px 0;
+    color: #444444;
+}
+
+.cover-frame img {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+table.meta-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+}
+
+table.meta-table th,
+table.meta-table td {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid #E0E0E0;
+    vertical-align: top;
+}
+
+table.meta-table th {
+    width: 190px;
+    color: #6B6B6B;
+    font-weight: bold;
+}
+
+.description-box {
+    border-left: 4px solid #333333;
+    background: #FCFCFC;
+    padding: 14px 18px;
+}
+
+.description-box[hidden] {
+    display: none;
+}
+
+.description-box h2 {
+    margin: 0 0 6px;
+    font-size: 1.1rem;
+}
+
+.description-box p {
+    margin: 0;
+    white-space: pre-line;
+}
+
+.subjects-box {
+    margin-top: 18px;
+}
+
+.subjects-box[hidden] {
+    display: none;
+}
+
+.subjects-box h2 {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+}
+
+.subject-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.subject-list li {
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 2px 8px;
+    border: 1px solid #333333;
+    background: #FFFFFF;
+}
+
+.record-link-box {
+    border: 2px solid #333333;
+    background: #EAEAEA;
+    padding: 16px 18px;
+    text-align: center;
+}
+
+@media (max-width: 520px) {
+    .hero-box {
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+
+    table.meta-table th {
+        width: 40%;
+    }
+}
