@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Open Library Single Page Application for searching books, viewing details, and exploring curated collections.">
+  <title>Open Library Explorer</title>
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- jQuery Library (Only for jQuery AJAX as requested) -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <!-- Mustache.js Library (Dynamic HTML Rendering) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.2.0/mustache.min.js"></script>
+</head>
+
+<body>
+  <!-- Header / Navigation Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div>
+          <h1 class="brand-title">Open Library Explorer</h1>
+        </div>
+      </div>
+      <nav class="nav-links" aria-label="Page Sections">
+        <a href="#section-search-explorer" class="nav-link">Search</a>
+        <a href="#section-collection" class="nav-link">Art Books</a>
+        <button type="button" id="nav-btn-modal" class="nav-link nav-btn-link"
+          style="display: none; background: rgba(255, 255, 255, 0.15); border: none; cursor: pointer; color: #ffffff;">View
+          Book Details</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-container">
+    <section id="section-search-explorer" class="app-section search-explorer-section"
+      aria-labelledby="heading-search-explorer">
+
+      <!-- Unified Section Banner -->
+      <div class="section-banner">
+        <div class="section-title-wrap">
+          <h2 id="heading-search-explorer" class="section-title">
+            Search
+          </h2>
+        </div>
+      </div>
+
+      <!-- Cohesive Single Card Element -->
+      <div class="search-explorer-card">
+
+        <!-- 1. Search Input Sub-element -->
+        <div id="sub-search-input" class="explorer-subpart explorer-search-part" aria-label="Search Input">
+          <!-- <div class="subpart-header">
+            <span class="subpart-tag">Search Input</span>
+          </div> -->
+          <form id="search-form" class="search-form" novalidate>
+            <div class="search-form-row">
+              <!-- Search Type Filter (Keywords or Title) -->
+              <div class="form-group field-type">
+                <label for="search-type">Search By</label>
+                <select id="search-type" name="searchType" class="form-control">
+                  <option value="q" selected>Keywords</option>
+                  <option value="title">Title</option>
+                </select>
+              </div>
+
+              <!-- Query Input & Validation Message -->
+              <div class="form-group field-query">
+                <label for="search-input">Search Query</label>
+                <div class="input-with-clear">
+                  <input type="text" id="search-input" name="query" class="form-control"
+                    placeholder="Search by book title or keywords (e.g., The Hobbit, 1984, Dystopian)..."
+                    autocomplete="off" aria-describedby="search-input-error">
+                  <button type="button" id="btn-clear-query" class="btn-clear" title="Clear search input"
+                    aria-label="Clear input">&times;</button>
+                </div>
+                <!-- Inline validation message -->
+                <div id="search-input-error" class="input-error-msg" style="display: none;" role="alert"></div>
+              </div>
+
+              <!-- Results Per Page (up to 50 results) -->
+              <div class="form-group field-limit">
+                <label for="search-limit">Per Page</label>
+                <select id="search-limit" name="limit" class="form-control">
+                  <option value="10" selected>10 per page</option>
+                  <option value="25">25 per page</option>
+                  <option value="50">50 per page</option>
+                </select>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="form-actions">
+                <button type="submit" id="btn-search-submit" class="btn btn-primary">
+                  Search
+                </button>
+                <button type="button" id="btn-reset-form" class="btn btn-secondary">
+                  Reset
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- 2. Search Results Sub-element -->
+        <div id="sub-search-results" class="explorer-subpart explorer-results-part" aria-label="Search Results">
+          <div class="results-toolbar">
+            <!-- Results Summary Info with Label -->
+            <div class="results-toolbar-left">
+              <div id="results-summary" class="results-summary">
+                <span class="status-indicator"></span>
+                <span id="results-count-text">No active search. Enter a book title or keywords above.</span>
+              </div>
+            </div>
+
+            <!-- View Switcher (Grid vs List) -->
+            <div class="view-switcher" role="group" aria-label="Result View Mode">
+              <span class="switcher-label">View:</span>
+              <button type="button" id="btn-view-grid" class="view-toggle-btn active" aria-pressed="true"
+                title="Grid View (Cards)">
+                <svg class="view-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M4 4h7v7H4zm9 0h7v7h-7zm-9 9h7v7H4zm9 0h7v7h-7z" />
+                </svg>
+                <span>Grid</span>
+              </button>
+              <button type="button" id="btn-view-list" class="view-toggle-btn" aria-pressed="false"
+                title="List View (Rows)">
+                <svg class="view-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M4 5h16v3H4zm0 6h16v3H4zm0 6h16v3H4z" />
+                </svg>
+                <span>List</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Results Display Container -->
+          <div id="results-container" class="results-container grid-view" aria-live="polite">
+            <!-- Default Empty State -->
+            <div id="results-empty-state" class="state-message empty-state">
+              <div class="state-icon">
+                <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+              </div>
+              <h3>Ready to Explore</h3>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="results-loading-state" class="state-message loading-state" style="display: none;">
+              <div class="spinner"></div>
+              <h3>Searching...</h3>
+            </div>
+
+            <!-- Error State -->
+            <div id="results-error-state" class="state-message error-state" style="display: none;">
+              <div class="state-icon">
+                <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <h3 id="error-title">Search Request Failed</h3>
+              <p id="error-message">Could not retrieve books from Open Library. Please verify your connection and try
+                again.</p>
+              <button type="button" id="btn-retry-search" class="btn btn-secondary">Retry Search</button>
+            </div>
+
+            <!-- Dynamic Results List/Grid rendered here via Vanilla JS -->
+            <div id="results-items" class="results-items"></div>
+          </div>
+        </div>
+
+        <!-- 3. Pagination Controls Sub-element -->
+        <div id="sub-pagination" class="explorer-subpart explorer-pagination-part" aria-label="Pagination Control">
+          <div class="pagination-inner">
+            <!-- Pagination Metadata -->
+            <div class="pagination-meta-wrap">
+              <div class="pagination-meta">
+                <span id="pagination-current-page-info">Page <strong>1</strong> of <strong>1</strong></span>
+                <span class="meta-divider">•</span>
+                <span id="pagination-items-range">Showing 0 results</span>
+              </div>
+            </div>
+
+            <!-- Pagination Navigation Buttons -->
+            <nav class="pagination-controls" aria-label="Search results navigation">
+              <button type="button" id="btn-page-first" class="btn-page" title="Go to First Page" disabled>
+                &laquo; First
+              </button>
+              <button type="button" id="btn-page-prev" class="btn-page" title="Previous Page" disabled>
+                &lsaquo; Prev
+              </button>
+
+              <!-- Dynamic Numbered Page Buttons -->
+              <div id="pagination-number-buttons" class="pagination-numbers">
+                <!-- Populated via JavaScript -->
+              </div>
+
+              <button type="button" id="btn-page-next" class="btn-page" title="Next Page" disabled>
+                Next &rsaquo;
+              </button>
+              <button type="button" id="btn-page-last" class="btn-page" title="Go to Last Page" disabled>
+                Last &raquo;
+              </button>
+            </nav>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- PREDEFINED BOOK COLLECTION                 -->
+    <!-- ========================================== -->
+    <section id="section-collection" class="app-section" aria-labelledby="heading-collection">
+      <div class="section-banner">
+        <div class="section-title-wrap">
+          <h2 id="heading-collection" class="section-title">
+            Art Books
+          </h2>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <!-- Collection Header & Status Bar -->
+        <div class="collection-header-bar">
+          <div class="collection-info-wrap">
+            <span id="collection-count-text" class="collection-count-text">Loading...</span>
+          </div>
+          <div class="collection-actions">
+            <!-- View Switcher (Grid vs List) -->
+            <div class="view-switcher" role="group" aria-label="Collection View Mode">
+              <span class="switcher-label">View:</span>
+              <button type="button" id="btn-collection-view-grid" class="view-toggle-btn active" aria-pressed="true"
+                title="Grid View (Cards)">
+                <svg class="view-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M4 4h7v7H4zm9 0h7v7h-7zm-9 9h7v7H4zm9 0h7v7h-7z" />
+                </svg>
+                <span>Grid</span>
+              </button>
+              <button type="button" id="btn-collection-view-list" class="view-toggle-btn" aria-pressed="false"
+                title="List View (Rows)">
+                <svg class="view-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M4 5h16v3H4zm0 6h16v3H4zm0 6h16v3H4z" />
+                </svg>
+                <span>List</span>
+              </button>
+            </div>
+            <button type="button" id="btn-reload-collection" class="btn btn-secondary btn-sm"
+              title="Reload Art collection">
+              Reload Collection
+            </button>
+          </div>
+        </div>
+
+        <!-- Predefined Cards Grid -->
+        <div id="predefined-collection-grid" class="predefined-grid grid-view" aria-live="polite">
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================================================================= -->
+  <!-- MODAL - SELECTED-BOOK DETAILS                                      -->
+  <!-- ================================================================= -->
+  <div id="book-details-modal" class="modal-overlay" role="dialog" aria-modal="true"
+    aria-labelledby="modal-title-heading" aria-hidden="true" style="display: none;">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Body -->
+        <div class="modal-body">
+          <!-- Loading state for details -->
+          <div id="modal-loading" class="state-message loading-state" style="display: none;">
+            <div class="spinner"></div>
+            <h3>Loading...</h3>
+          </div>
+
+          <!-- Active Selected Book Content -->
+          <article id="modal-content" class="details-content" style="display: none;">
+            <!-- Rendered dynamically via JavaScript -->
+          </article>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+          <span class="modal-keyboard-hint">Tip: Press <kbd class="kbd-key">Esc</kbd> or click outside to close</span>
+          <button type="button" id="btn-modal-close" class="btn btn-secondary btn-sm">Close Details</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MUSTACHE.JS TEMPLATES FOR DYNAMIC HTML RENDERING                    -->
+  <!-- ================================================================= -->
+
+  <!-- 1. Search Results Template (List of Book Cards) -->
+  <script id="tmpl-search-results" type="x-tmpl-mustache">
+    {{#books}}
+    <article class="book-card {{#isSelected}}is-selected{{/isSelected}}" tabindex="0" role="button" aria-label="Book: {{title}}" data-key="{{key}}">
+      <div class="card-cover-wrap">
+        {{#hasCover}}
+        <img 
+          src="{{coverUrl}}" 
+          alt="Cover for {{title}}" 
+          class="card-cover-img" 
+          loading="lazy"
+          data-title="{{title}}"
+          data-author="{{author}}"
+          onerror="handleCoverImageError(this);"
+        />
+        {{/hasCover}}
+        {{^hasCover}}
+        {{{placeholderHtml}}}
+        {{/hasCover}}
+      </div>
+      <div class="card-body">
+        <h3 class="card-title" title="{{title}}">{{title}}</h3>
+        <p class="card-author">{{author}}</p>
+        <div class="card-meta-line">
+          <span>{{year}}</span>
+          {{#editions}}
+          <span>•</span><span>{{editions}}</span>
+          {{/editions}}
+        </div>
+        {{#hasSubjects}}
+        <div class="card-subjects">
+          {{#subjects}}
+          <span class="subject-badge">{{name}}</span>
+          {{/subjects}}
+        </div>
+        {{/hasSubjects}}
+        <div class="card-footer">
+          <button type="button" class="btn-details" aria-label="View details for {{title}}">
+            <span>View Details</span> &rarr;
+          </button>
+        </div>
+      </div>
+    </article>
+    {{/books}}
+  </script>
+
+  <!-- 2. Single Search Result Card Template -->
+  <script id="tmpl-search-card" type="x-tmpl-mustache">
+    <div class="card-cover-wrap">
+      {{#hasCover}}
+      <img 
+        src="{{coverUrl}}" 
+        alt="Cover for {{title}}" 
+        class="card-cover-img" 
+        loading="lazy"
+        data-title="{{title}}"
+        data-author="{{author}}"
+        onerror="handleCoverImageError(this);"
+      />
+      {{/hasCover}}
+      {{^hasCover}}
+      {{{placeholderHtml}}}
+      {{/hasCover}}
+    </div>
+    <div class="card-body">
+      <h3 class="card-title" title="{{title}}">{{title}}</h3>
+      <p class="card-author">{{author}}</p>
+      <div class="card-meta-line">
+        <span>{{year}}</span>
+        {{#editions}}
+        <span>•</span><span>{{editions}}</span>
+        {{/editions}}
+      </div>
+      {{#hasSubjects}}
+      <div class="card-subjects">
+        {{#subjects}}
+        <span class="subject-badge">{{name}}</span>
+        {{/subjects}}
+      </div>
+      {{/hasSubjects}}
+      <div class="card-footer">
+        <button type="button" class="btn-details" aria-label="View details for {{title}}">
+          <span>View Details</span> &rarr;
+        </button>
+      </div>
+    </div>
+  </script>
+
+  <!-- 3. Predefined "Art" Collection Books Template -->
+  <script id="tmpl-collection-books" type="x-tmpl-mustache">
+    {{#books}}
+    <article class="predefined-card {{#isSelected}}is-selected{{/isSelected}}" tabindex="0" role="button" aria-label="Art Book: {{title}}" data-key="{{key}}">
+      <div class="predefined-cover-wrap">
+        {{#hasCover}}
+        <img 
+          src="{{coverUrl}}" 
+          alt="Cover for {{title}}" 
+          class="predefined-cover-img" 
+          loading="lazy"
+          data-title="{{title}}"
+          data-author="{{author}}"
+          onerror="handleCoverImageError(this);"
+        />
+        {{/hasCover}}
+        {{^hasCover}}
+        {{{placeholderHtml}}}
+        {{/hasCover}}
+      </div>
+      <div class="predefined-card-body">
+        <h4 class="predefined-title" title="{{title}}">{{title}}</h4>
+        <p class="predefined-author">{{author}}</p>
+        {{#yearText}}
+        <span class="predefined-year">First published: {{yearText}}</span>
+        {{/yearText}}
+        <div class="predefined-card-footer">
+          <button type="button" class="btn-details" aria-label="View details for {{title}}">
+            <span>View Details</span> &rarr;
+          </button>
+        </div>
+      </div>
+    </article>
+    {{/books}}
+  </script>
+
+  <!-- 4. Single Predefined Collection Card Template -->
+  <script id="tmpl-collection-card" type="x-tmpl-mustache">
+    <div class="predefined-cover-wrap">
+      {{#hasCover}}
+      <img 
+        src="{{coverUrl}}" 
+        alt="Cover for {{title}}" 
+        class="predefined-cover-img" 
+        loading="lazy"
+        data-title="{{title}}"
+        data-author="{{author}}"
+        onerror="handleCoverImageError(this);"
+      />
+      {{/hasCover}}
+      {{^hasCover}}
+      {{{placeholderHtml}}}
+      {{/hasCover}}
+    </div>
+    <div class="predefined-card-body">
+      <h4 class="predefined-title" title="{{title}}">{{title}}</h4>
+      <p class="predefined-author">{{author}}</p>
+      {{#yearText}}
+      <span class="predefined-year">First published: {{yearText}}</span>
+      {{/yearText}}
+      <div class="predefined-card-footer">
+        <button type="button" class="btn-details" aria-label="View details for {{title}}">
+          <span>View Details</span> &rarr;
+        </button>
+      </div>
+    </div>
+  </script>
+
+  <!-- 5. Selected Book Details Modal Template -->
+  <script id="tmpl-book-details" type="x-tmpl-mustache">
+    <div class="details-cover-col">
+      <div class="details-cover-frame">
+        {{#hasCover}}
+        <img 
+          src="{{coverUrl}}" 
+          alt="Cover of {{title}}" 
+          class="details-cover-img"
+          data-title="{{title}}"
+          data-author="{{author}}"
+          onerror="handleCoverImageError(this);"
+        />
+        {{/hasCover}}
+        {{^hasCover}}
+        {{{placeholderHtml}}}
+        {{/hasCover}}
+      </div>
+      <div class="details-external-links">
+        <a href="{{workUrl}}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="width: 100%; text-decoration: none;">
+          <span>View on OpenLibrary</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="details-info-col">
+      <div>
+        <h3 id="modal-title-heading" class="details-title">{{title}}</h3>
+        <p class="details-authors">By {{author}}</p>
+      </div>
+
+      <div class="metadata-grid">
+        <div class="metadata-item">
+          <span class="metadata-label">Work Number</span>
+          <span class="metadata-value" title="{{rawWorkKey}}">{{workNumber}}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">First Published</span>
+          <span class="metadata-value">{{firstYear}}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">Editions Count</span>
+          <span class="metadata-value">{{editions}}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">Primary ISBN</span>
+          <span class="metadata-value">{{isbn}}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">Publishers</span>
+          <span class="metadata-value">{{publisher}}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">Languages</span>
+          <span class="metadata-value">{{languages}}</span>
+        </div>
+      </div>
+
+      <div class="details-description-box">
+        <h4 class="description-title">Description</h4>
+        <p class="description-text">{{description}}</p>
+      </div>
+
+      {{#hasSubjects}}
+      <div class="details-subjects-box">
+        <h4 class="subjects-title">Subjects (Click to search)</h4>
+        <div class="subjects-list">
+          {{#subjects}}
+          <button type="button" class="subject-pill" data-subject="{{name}}">{{name}}</button>
+          {{/subjects}}
+        </div>
+      </div>
+      {{/hasSubjects}}
+    </div>
+  </script>
+
+  <!-- 5. Fallback Cover Placeholder Template -->
+  <script id="tmpl-cover-placeholder" type="x-tmpl-mustache">
+    <div class="cover-placeholder">
+      <span class="cover-placeholder-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      </span>
+      <span class="cover-placeholder-title">{{title}}</span>
+      {{#hasAuthor}}
+      <span class="cover-placeholder-author">{{author}}</span>
+      {{/hasAuthor}}
+      <span class="cover-placeholder-badge">No Cover Available</span>
+    </div>
+  </script>
+
+  <!-- 6. No Search Results State Template -->
+  <script id="tmpl-no-matches" type="x-tmpl-mustache">
+    <div class="state-message no-match-state">
+      <div class="state-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+      </div>
+      <h3>No Books Found</h3>
+      <p class="no-match-subtitle">We couldn't find any books matching "<strong>{{query}}</strong>" searching by {{searchTypeLabel}}.</p>
+      <div class="no-match-suggestions">
+        <h4>Search Tips &amp; Suggestions:</h4>
+        <ul>
+          <li>Double-check for any typos or misspellings in your search.</li>
+          <li>Try searching by <strong>{{alternativeTypeLabel}}</strong> instead of {{searchTypeLabel}}.</li>
+          <li>Use fewer, broader, or more common keywords.</li>
+          <li>Browse our handpicked <strong>Predefined Book Collection</strong> below.</li>
+        </ul>
+      </div>
+      <button type="button" id="btn-clear-no-match" class="btn btn-secondary btn-sm">Clear Search</button>
+    </div>
+  </script>
+
+  <!-- Main JavaScript Application -->
+  <script src="app.js"></script>
+</body>
+
+</html>
